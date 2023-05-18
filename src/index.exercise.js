@@ -17,33 +17,66 @@ function CloseButton({ onClick, ...props }) {
   )
 }
 
+function LoginForm({ onSubmit, buttonText }) {
+  const handleSubmit = (e) => {
+    e.preventDefault()
+
+    const formData = new FormData(e.target)
+    const formJson = Object.fromEntries(formData.entries())
+
+    onSubmit(formJson)
+  }
+
+  return (
+    <form method="post" onSubmit={handleSubmit}>
+      <div>
+        <lable htmlFor="username">Username</lable>
+        <input id="username" name="username" type="text"/>
+      </div>
+      <div>
+        <lable htmlFor="password">Password</lable>
+        <input id="password" name="password" type="password"/>
+      </div>
+      <div>
+        <button type="submit">{buttonText}</button>
+      </div>
+    </form>
+  )
+}
+
 function App() {
-  // TODO rename
   const [openDialog, setOpenDialog] = useState(NONE)
 
-  const handleLogin = () => setOpenDialog(LOGIN)
-  const handleRegister = () => setOpenDialog(REGISTER)
-  const handleClose = () => setOpenDialog(NONE)
+  const handleLoginDialog = () => setOpenDialog(LOGIN)
+  const handleRegisterDialog = () => setOpenDialog(REGISTER)
+  const handleCloseDialog = () => setOpenDialog(NONE)
+
+  const login = (formData) => {
+    console.log('login', formData)
+  }
+  const register = (formData) => {
+    console.log('register', formData)
+  }
 
   return (
     <div id="root">
       <Logo height="80" width="80"/>
       <h1>Bookshelf</h1>
       <div>
-        <button onClick={handleLogin}>Login</button>
+        <button onClick={handleLoginDialog}>Login</button>
       </div>
       <div>
-        <button onClick={handleRegister}>Register</button>
+        <button onClick={handleRegisterDialog}>Register</button>
       </div>
-
-      <Dialog aria-label="Login form" isOpen={openDialog === LOGIN} onDismiss={handleClose}>
-        <CloseButton onClick={handleClose}/>
+      <Dialog aria-label="Login form" isOpen={openDialog === LOGIN} onDismiss={handleCloseDialog}>
+        <CloseButton onClick={handleCloseDialog}/>
         <h3>Login</h3>
+        <LoginForm onSubmit={login} buttonText="Login"/>
       </Dialog>
-
-      <Dialog aria-label="register form" isOpen={openDialog === REGISTER} onDismiss={handleClose}>
-        <CloseButton onClick={handleClose}/>
+      <Dialog aria-label="register form" isOpen={openDialog === REGISTER} onDismiss={handleCloseDialog}>
+        <CloseButton onClick={handleCloseDialog}/>
         <h3>Register</h3>
+        <LoginForm onSubmit={register} buttonText="Register"/>
       </Dialog>
     </div>
   )
