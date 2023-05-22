@@ -1,16 +1,16 @@
 /** @jsx jsx */
-import {jsx} from '@emotion/core'
+import { jsx } from '@emotion/core'
 
 import * as React from 'react'
-import { Routes, Route, Link } from 'react-router-dom'
-import {Button} from './components/lib'
+import { Routes, Route, Link, useMatch } from 'react-router-dom'
+import { Button } from './components/lib'
 import * as mq from './styles/media-queries'
 import * as colors from './styles/colors'
 import { DiscoverBooksScreen } from './screens/discover'
 import { BookScreen } from './screens/book.exercise'
 import { NotFoundScreen } from './screens/not-found.exercise'
 
-function AuthenticatedApp({user, logout}) {
+function AuthenticatedApp({ user, logout }) {
   return (
     <React.Fragment>
       <div
@@ -23,7 +23,7 @@ function AuthenticatedApp({user, logout}) {
         }}
       >
         {user.username}
-        <Button variant="secondary" css={{marginLeft: '10px'}} onClick={logout}>
+        <Button variant="secondary" css={{ marginLeft: '10px' }} onClick={logout}>
           Logout
         </Button>
       </div>
@@ -43,11 +43,11 @@ function AuthenticatedApp({user, logout}) {
           },
         }}
       >
-        <div css={{position: 'relative'}}>
-          <Nav />
+        <div css={{ position: 'relative' }}>
+          <Nav/>
         </div>
-        <main css={{width: '100%'}}>
-          <AppRoutes user={user} />
+        <main css={{ width: '100%' }}>
+          <AppRoutes user={user}/>
         </main>
       </div>
     </React.Fragment>
@@ -55,9 +55,11 @@ function AuthenticatedApp({user, logout}) {
 }
 
 function NavLink(props) {
+  const match = useMatch(props.to)
+
   return (
     <Link
-      css={{
+      css={[{
         display: 'block',
         padding: '8px 15px 8px 10px',
         margin: '5px 0',
@@ -71,7 +73,15 @@ function NavLink(props) {
           textDecoration: 'none',
           background: colors.gray10,
         },
-      }}
+      },
+        Boolean(match) && {
+          borderLeft: `5px solid ${colors.indigo}`,
+          background: colors.gray10,
+          ':hover': {
+            background: colors.gray20,
+          },
+        }
+      ]}
       {...props}
     />
   )
@@ -106,17 +116,17 @@ function Nav() {
   )
 }
 
-function AppRoutes({user}) {
+function AppRoutes({ user }) {
   return (
     <Routes>
-      <Route path="/discover" element={<DiscoverBooksScreen user={user} />} />
-      <Route path="/book/:bookId" element={<BookScreen user={user} />} />
-      <Route path="*" element={<NotFoundScreen />} />
+      <Route path="/discover" element={<DiscoverBooksScreen user={user}/>}/>
+      <Route path="/book/:bookId" element={<BookScreen user={user}/>}/>
+      <Route path="*" element={<NotFoundScreen/>}/>
     </Routes>
   )
 }
 
-export {AuthenticatedApp}
+export { AuthenticatedApp }
 
 /*
 eslint
