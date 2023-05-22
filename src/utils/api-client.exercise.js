@@ -2,13 +2,15 @@ import { logout } from '../auth-provider'
 
 const apiURL = process.env.REACT_APP_API_URL
 
-function client(endpoint, { token, headers, customHeaders, ...customConfig } = {}) {
+function client(endpoint, { token, data, headers, customHeaders, ...customConfig } = {}) {
   const config = {
-    method: 'GET',
+    method: data ? 'POST' : 'GET',
     headers: {
       Authorization: token ? `Bearer ${token}` : undefined,
+      'Content-Type': data ? 'application/json' : undefined,
       ...customHeaders,
     },
+    body: JSON.stringify(data),
     ...customConfig,
   }
 
