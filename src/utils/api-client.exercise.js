@@ -3,8 +3,15 @@ async function client(endpoint, customConfig = {}) {
     method: 'GET',
     ...customConfig,
   }
+
   const response = await window.fetch(`${process.env.REACT_APP_API_URL}/${endpoint}`, config)
-  return response.json()
+  const data = await response.json()
+
+  if(response.ok) {
+    return data
+  } else {
+    return Promise.reject(data)
+  }
 }
 
 export { client }
