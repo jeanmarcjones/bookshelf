@@ -9,42 +9,17 @@ import { Input, BookListUL, Spinner } from './components/lib'
 import { BookRow } from './components/book-row'
 import { client } from './utils/api-client'
 import { danger } from 'styles/colors'
-
-const idleStatus = 'idle'
-const loadingStatus = 'loading'
-const successStatus = 'success'
-const errorStatus = 'error'
+import { useAsync } from 'utils/hooks'
 
 function DiscoverBooksScreen() {
-  const [status, setStatus] = useState(idleStatus)
-  const [data, setData] = useState(null)
   const [query, setQuery] = useState('')
   const [queried, setQueried] = useState(false)
-  const [error, setError] = useState(null)
+  const { data, error, run, isLoading, isError, isSuccess } = useAsync()
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      if (!queried) return
-
-      try {
-        setStatus(loadingStatus)
-
-        const response = await client(`books?query=${encodeURIComponent(query)}`)
-        setData(response)
-
-        setStatus(successStatus)
-      } catch (e) {
-        setError(e)
-        setStatus(errorStatus)
-      }
-    }
-
-    fetchBooks()
-  }, [queried, query])
-
-  const isLoading = status === loadingStatus
-  const isSuccess = status === successStatus
-  const isError = status === errorStatus
+    if (!queried) return;
+    run(client(`books?query=${encodeURIComponent(query)}`))
+  }, [queried, query, run])
 
   function handleSearchSubmit(event) {
     event.preventDefault()
