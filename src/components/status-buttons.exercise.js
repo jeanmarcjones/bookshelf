@@ -10,13 +10,10 @@ import {
   FaTimesCircle,
 } from 'react-icons/fa'
 import Tooltip from '@reach/tooltip'
-// 🐨 you'll need useQuery, useMutation, and queryCache from 'react-query'
-import {useQuery, useMutation, queryCache} from 'react-query'
-// 🐨 you'll also need client from 'utils/api-client'
-import {client} from 'utils/api-client'
 import {useAsync} from 'utils/hooks'
 import * as colors from 'styles/colors'
 import {CircleButton, Spinner} from './lib'
+import { useCreateListItem, useListItem, useRemoveListItem, useUpdateListItem } from '../utils/list-items'
 
 function TooltipButton({label, highlight, onClick, icon, ...rest}) {
   const {isLoading, isError, error, run} = useAsync()
@@ -50,57 +47,13 @@ function TooltipButton({label, highlight, onClick, icon, ...rest}) {
 }
 
 function StatusButtons({user, book}) {
-  // 🐨 call useQuery here to get the listItem (if it exists)
-  const {data: listItems} = useQuery({
-    queryKey: 'list-items',
-    queryFn: () => client(`list-items`, {token: user.token}).then(
-      data => data.listItems,
-    ),
-  })
+  const listItem = useListItem(user, book.id)
 
-  // 🐨 search through the listItems you got from react-query and find the
-  // one with the right bookId.
-  const listItem = listItems?.find(li => li.bookId === book.id) ?? null
+  const [update] = useUpdateListItem(user)
 
-  // 💰 for all the mutations below, if you want to get the list-items cache
-  // updated after this query finishes then use the `onSettled` config option
-  // to queryCache.invalidateQueries('list-items')
+  const [remove] = useRemoveListItem(user)
 
-  // 🐨 call useMutation here and assign the mutate function to "update"
-  // the mutate function should call the list-items/:listItemId endpoint with a PUT
-  //   and the updates as data. The mutate function will be called with the updates
-  //   you can pass as data.
-  const [update] = useMutation(
-    update =>
-      client(`list-items/${update.id}`, {
-        token: user.token,
-        data: update,
-        method: 'PUT',
-      }),
-    {
-      onSettled: () => queryCache.invalidateQueries('list-items'),
-    },
-  )
-
-  // 🐨 call useMutation here and assign the mutate function to "remove"
-  // the mutate function should call the list-items/:listItemId endpoint with a DELETE
-  const [remove] = useMutation(
-    ({id}) => client(`list-items/${id}`, {token: user.token, method: 'DELETE'}),
-    {
-      onSettled: () => queryCache.invalidateQueries('list-items'),
-    },
-  )
-
-  // 🐨 call useMutation here and assign the mutate function to "create"
-  // the mutate function should call the list-items endpoint with a POST
-  // and the bookId the listItem is being created for.
-  const [create] = useMutation(
-    ({bookId}) =>
-      client('list-items', {token: user.token, data: {bookId}, method: 'POST'}),
-    {
-      onSettled: () => queryCache.invalidateQueries('list-items'),
-    },
-  )
+  const [create] = useCreateListItem(user)
 
   return (
     <React.Fragment>
@@ -109,8 +62,6 @@ function StatusButtons({user, book}) {
           <TooltipButton
             label="Unmark as read"
             highlight={colors.yellow}
-            // 🐨 add an onClick here that calls update with the data we want to update
-            // 💰 to mark a list item as unread, set the finishDate to null
             onClick={() => update({id: listItem.id, finishDate: null})}
             icon={<FaBook />}
           />
@@ -118,8 +69,6 @@ function StatusButtons({user, book}) {
           <TooltipButton
             label="Mark as read"
             highlight={colors.green}
-            // 🐨 add an onClick here that calls update with the data we want to update
-            // 💰 to mark a list item as read, set the finishDate
             onClick={() => update({id: listItem.id, finishDate: Date.now()})}
             icon={<FaCheckCircle />}
           />
@@ -129,7 +78,6 @@ function StatusButtons({user, book}) {
         <TooltipButton
           label="Remove from list"
           highlight={colors.danger}
-          // 🐨 add an onClick here that calls remove
           onClick={() => remove({id: listItem.id})}
           icon={<FaMinusCircle />}
         />
@@ -137,7 +85,6 @@ function StatusButtons({user, book}) {
         <TooltipButton
           label="Add to list"
           highlight={colors.indigo}
-          // 🐨 add an onClick here that calls create
           onClick={() => create({bookId: book.id})}
           icon={<FaPlusCircle />}
         />
