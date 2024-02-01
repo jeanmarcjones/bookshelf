@@ -117,9 +117,9 @@ function ListItemTimeframe({listItem}) {
 }
 
 // 💣 remove the user prop here
-function NotesTextarea({listItem, user}) {
+function NotesTextarea({listItem}) {
   // 💣 remove the user argument here
-  const [mutate, {error, isError, isLoading}] = useUpdateListItem(user)
+  const [mutate, {error, isError, isLoading}] = useUpdateListItem()
   const debouncedMutate = React.useMemo(() => debounceFn(mutate, {wait: 300}), [
     mutate,
   ])
