@@ -4,7 +4,7 @@ import {jsx} from '@emotion/core'
 import * as React from 'react'
 import Tooltip from '@reach/tooltip'
 import {FaSearch, FaTimes} from 'react-icons/fa'
-import { refetchBookSearchQuery, useBookSearch } from 'utils/books'
+import {useBookSearch, refetchBookSearchQuery} from 'utils/books'
 import * as colors from 'styles/colors'
 import {BookRow} from 'components/book-row'
 import {BookListUL, Spinner, Input} from 'components/lib'
@@ -18,9 +18,7 @@ function DiscoverBooksScreen({user}) {
   )
 
   React.useEffect(() => {
-    return () => {
-      refetchBookSearchQuery(user)
-    }
+    return () => refetchBookSearchQuery(user)
   }, [user])
 
   function handleSearchSubmit(event) {
