@@ -1,18 +1,12 @@
-import {server, rest} from 'test/server'
-import {client} from '../api-client'
 import {queryCache} from 'react-query'
 import * as auth from 'auth-provider'
-
-jest.mock('react-query')
-jest.mock('auth-provider')
+import {server, rest} from 'test/server'
+import {client} from '../api-client'
 
 const apiURL = process.env.REACT_APP_API_URL
 
-// enable API mocking in test runs using the same request handlers
-// as for the client-side mocking.
-beforeAll(() => server.listen())
-afterAll(() => server.close())
-afterEach(() => server.resetHandlers())
+jest.mock('react-query')
+jest.mock('auth-provider')
 
 test('makes GET requests to the given endpoint', async () => {
   const endpoint = 'test-endpoint'
@@ -82,26 +76,31 @@ test('when data is provided, it is stringified and the method defaults to POST',
   expect(result).toEqual(data)
 })
 
-test('should handle unsuccessful status codes', async () => {
+test('automatically logs the user out if a request returns a 401', async () => {
   const endpoint = 'test-endpoint'
+  const mockResult = {mockValue: 'VALUE'}
   server.use(
-      rest.get(`${apiURL}/${endpoint}`, async (req, res, ctx) => {
-        return res(ctx.status(400), ctx.json({message: '400 Bad Request'}))
-      }),
+    rest.get(`${apiURL}/${endpoint}`, async (req, res, ctx) => {
+      return res(ctx.status(401), ctx.json(mockResult))
+    }),
   )
 
-  await expect(client(endpoint)).rejects.toEqual({message: '400 Bad Request'})
-})
+  const error = await client(endpoint).catch(e => e)
 
-test('should handle a unauthorised request', async () => {
-  const endpoint = 'test-endpoint'
-  server.use(
-      rest.get(`${apiURL}/${endpoint}`, async (req, res, ctx) => {
-        return res(ctx.status(401), ctx.json({message: '401 Unauthorized'}))
-      }),
-  )
+  expect(error.message).toMatchInlineSnapshot(`"Please re-authenticate."`)
 
-  await expect(client(endpoint)).rejects.toEqual({message: 'Please re-authenticate.'})
   expect(queryCache.clear).toHaveBeenCalledTimes(1)
   expect(auth.logout).toHaveBeenCalledTimes(1)
-});
+})
+
+test('correctly rejects the promise if there is an error', async () => {
+  const endpoint = 'test-endpoint'
+  const testError = {message: 'Test error'}
+  server.use(
+    rest.get(`${apiURL}/${endpoint}`, async (req, res, ctx) => {
+      return res(ctx.status(400), ctx.json(testError))
+    }),
+  )
+
+  await expect(client(endpoint)).rejects.toEqual(testError)
+})
