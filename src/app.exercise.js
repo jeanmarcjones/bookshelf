@@ -1,18 +1,15 @@
 import * as React from 'react'
-import { useAuth } from './context/auth-context'
-// 🐨 you'll want to render the FullPageSpinner as the fallback
-import { FullPageSpinner } from './components/lib'
+import {useAuth} from './context/auth-context'
+import {FullPageSpinner} from './components/lib'
 
-// 🐨 exchange these for React.lazy calls
-const AuthenticatedApp = React.lazy(() => import('./authenticated-app'))
+const AuthenticatedApp = React.lazy(() => import(/* webpackPrefetch: true */ './authenticated-app'))
 const UnauthenticatedApp = React.lazy(() => import('./unauthenticated-app'))
 
 function App() {
-  const { user } = useAuth()
-  // 🐨 wrap this in a <React.Suspense /> component
+  const {user} = useAuth()
   return (
     <React.Suspense fallback={<FullPageSpinner />}>
-      {user ? <AuthenticatedApp/> : <UnauthenticatedApp/>}
+      {user ? <AuthenticatedApp /> : <UnauthenticatedApp />}
     </React.Suspense>
   )
 }

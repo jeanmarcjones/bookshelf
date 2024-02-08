@@ -8,6 +8,11 @@ Elaborate on your learnings here in `INSTRUCTIONS.md`
 * Use the coverage report to check how much code is loaded and see the percentage of unused code
 * From the coverage report you can click on a file to view it in the source tab and unused lines will be marked in red
 
+### Extra Credit 01
+* Prefetch should only be used for code you are going to need soon don't over use it
+* The prefetch magic comment adds an attribute to the chunks' script tag
+* Prefetched code is indicated in the size column in the dev tools network tab
+
 ## Background
 
 One of the most common performance problems web applications face is initial
