@@ -4,6 +4,10 @@
 
 Elaborate on your learnings here in `INSTRUCTIONS.md`
 
+### Exercise
+* Use the coverage report to check how much code is loaded and see the percentage of unused code
+* From the coverage report you can click on a file to view it in the source tab and unused lines will be marked in red
+
 ## Background
 
 One of the most common performance problems web applications face is initial
