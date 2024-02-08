@@ -10,14 +10,16 @@ import {
   Spinner,
   FormGroup,
   ErrorMessage,
-  // 💣 when you're all done, you won't need this Dialog anymore
-  // you can remove this now or later when you've finished
 } from './components/lib'
-// 🐨 import all the Modal compound components you created in ./components/modal
+import {
+  Modal,
+  ModalDismissButton,
+  ModalContents,
+  ModalOpenButton,
+} from './components/modal'
 import {Logo} from './components/logo'
 import {useAuth} from './context/auth-context'
 import {useAsync} from './utils/hooks'
-import { Modal, ModalContents, ModalDismissButton, ModalOpenButton } from './components/modal.exercise'
 
 function LoginForm({onSubmit, submitButton}) {
   const {isLoading, isError, error, run} = useAsync()
@@ -70,7 +72,16 @@ function LoginForm({onSubmit, submitButton}) {
   )
 }
 
-// 💣 when you're all done, you'll be able to completely delete this
+const circleDismissButton = (
+  <div css={{display: 'flex', justifyContent: 'flex-end'}}>
+    <ModalDismissButton>
+      <CircleButton onClick={() => console.log('closing the modal')}>
+        <VisuallyHidden>Close</VisuallyHidden>
+        <span aria-hidden>×</span>
+      </CircleButton>
+    </ModalDismissButton>
+  </div>
+)
 
 function UnauthenticatedApp() {
   const {login, register} = useAuth()
@@ -94,51 +105,30 @@ function UnauthenticatedApp() {
           gridGap: '0.75rem',
         }}
       >
-        {/* 🐨 replace both of these with the Modal compound components */}
-        {/*
-          🦉 when you're done, it'll look a lot more complicated than
-             it did when you started, but the extra credits will help clean
-             things up a bit.
-        */}
         <Modal>
           <ModalOpenButton>
-            <Button variant="primary">Login</Button>
+            <Button variant="primary" onClick={() => console.log('opening the modal')}>Login</Button>
           </ModalOpenButton>
-
           <ModalContents aria-label="Login form">
-            <ModalDismissButton>
-              <CircleButton>
-                <VisuallyHidden>Close</VisuallyHidden>
-                <span aria-hidden>×</span>
-              </CircleButton>
-            </ModalDismissButton>
-
-            <h3 css={{textAlign: 'center', fontSize: '2em'}}>
-              Login
-            </h3>
-
-            <LoginForm onSubmit={login} submitButton={<Button variant="primary">Login</Button>} />
+            {circleDismissButton}
+            <h3 css={{textAlign: 'center', fontSize: '2em'}}>Login</h3>
+            <LoginForm
+              onSubmit={login}
+              submitButton={<Button variant="primary">Login</Button>}
+            />
           </ModalContents>
         </Modal>
-
         <Modal>
           <ModalOpenButton>
             <Button variant="secondary">Register</Button>
           </ModalOpenButton>
-
           <ModalContents aria-label="Registration form">
-            <ModalDismissButton>
-              <CircleButton>
-                <VisuallyHidden>Close</VisuallyHidden>
-                <span aria-hidden>×</span>
-              </CircleButton>
-            </ModalDismissButton>
-
-            <h3 css={{textAlign: 'center', fontSize: '2em'}}>
-              Login
-            </h3>
-
-            <LoginForm onSubmit={register} submitButton={<Button variant="secondary">Register</Button>} />
+            {circleDismissButton}
+            <h3 css={{textAlign: 'center', fontSize: '2em'}}>Register</h3>
+            <LoginForm
+              onSubmit={register}
+              submitButton={<Button variant="secondary">Register</Button>}
+            />
           </ModalContents>
         </Modal>
       </div>
