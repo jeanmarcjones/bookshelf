@@ -4,6 +4,22 @@
 
 Elaborate on your learnings here in `INSTRUCTIONS.md`
 
+### Modal Exercise Notes
+
+* You get use the `toHaveAttribute` matcher to test specific element attributes.
+* You don't have to pass options to`*ByRole` matchers this is useful when you know there is only one element of that
+  type rendered.
+* Prefer the `toBeInTheDocument` matcher over `toBeVisible` when checking if an element is present.
+
+### useAsync Exercise Notes
+
+* When using `deferred()` you should await the promise returned from `run()` rather than awaiting `resolved()` to ensure
+  the promise is totally complete.
+* You can use `Symbol` when asserting to ensure referential equality to your test data.
+* To ensure test isolation, it's best to add mock/spy initialisation and resets to the before and after hooks.
+  If you reset your mocks inside a test that throws an error, they won't be reset.
+* You can use the `*MatchingInlineSnapshot` matchers to let jest take a snapshot of what your code is returning.
+
 ## Background
 
 The two building blocks of React applications are Hooks and Components. You can
@@ -51,11 +67,11 @@ import userEvent from '@testing-library/user-event'
 import {MyComponent} from '../my-component'
 
 test('renders click me button', () => {
-  render(<MyComponent />)
-  const button = screen.getByRole('button', {name: /click me/i})
-  await userEvent.click(button)
+    render(<MyComponent/>)
+    const button = screen.getByRole('button', {name: /click me/i})
+    await userEvent.click(button)
 
-  expect().toBeInTheDocument()
+    expect().toBeInTheDocument()
 })
 ```
 
@@ -86,12 +102,12 @@ import {renderHook, act} from '@testing-library/react'
 import useCounter from '../use-counter'
 
 test('should increment counter', () => {
-  const {result} = renderHook(() => useCounter())
-  expect(result.current.count).toBe(0)
-  act(() => {
-    result.current.increment()
-  })
-  expect(result.current.count).toBe(1)
+    const {result} = renderHook(() => useCounter())
+    expect(result.current.count).toBe(0)
+    act(() => {
+        result.current.increment()
+    })
+    expect(result.current.count).toBe(1)
 })
 ```
 
@@ -116,10 +132,10 @@ another. This is totally fine:
 
 ```javascript
 render(
-  <Parent>
-    <Child1 />
-    <Child2>Hello</Child2>
-  </Parent>,
+    <Parent>
+        <Child1/>
+        <Child2>Hello</Child2>
+    </Parent>,
 )
 ```
 
@@ -132,7 +148,8 @@ tests). But with `toEqual`, you _have_ to include all properties. You can use
 Here's how you can do that:
 
 ```javascript
-const foo = () => {}
+const foo = () => {
+}
 expect({foo}).toEqual({foo: expect.any(Function)})
 ```
 
@@ -176,21 +193,21 @@ functions. So we could create a function like this:
 
 ```javascript
 function getAsyncState(overrides) {
-  return {
-    data: null,
-    isIdle: true,
-    isLoading: false,
-    isError: false,
-    isSuccess: false,
+    return {
+        data: null,
+        isIdle: true,
+        isLoading: false,
+        isError: false,
+        isSuccess: false,
 
-    error: null,
-    status: 'idle',
-    run: expect.any(Function),
-    reset: expect.any(Function),
-    setData: expect.any(Function),
-    setError: expect.any(Function),
-    ...overrides,
-  }
+        error: null,
+        status: 'idle',
+        run: expect.any(Function),
+        reset: expect.any(Function),
+        setData: expect.any(Function),
+        setError: expect.any(Function),
+        ...overrides,
+    }
 }
 ```
 
