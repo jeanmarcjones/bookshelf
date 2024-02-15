@@ -1,39 +1,32 @@
-/** @jsx jsx */
-import {jsx} from '@emotion/core'
-
+import * as React from 'react'
 import {render, screen, within} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-// 🐨 you're gonna need this stuff:
-import {Modal, ModalContents, ModalOpenButton} from '../modal'
+import {Modal, ModalOpenButton, ModalContents} from '../modal'
 
 test('can be opened and closed', async () => {
-  // 🐨 render the Modal, ModalOpenButton, and ModalContents
+  const label = 'Modal Label'
+  const title = 'Modal Title'
+  const content = 'Modal content'
+
   render(
     <Modal>
       <ModalOpenButton>
-        <button>Login</button>
+        <button>Open</button>
       </ModalOpenButton>
-      <ModalContents aria-label="Login form" title="Login">
-        <p>Content</p>
+      <ModalContents aria-label={label} title={title}>
+        <div>{content}</div>
       </ModalContents>
     </Modal>,
   )
+  await userEvent.click(screen.getByRole('button', {name: /open/i}))
 
-  // 🐨 click the open button
-  await userEvent.click(screen.getByRole('button', {name: /login/i}))
-
-  // 🐨 verify the modal contains the modal contents, title, and label
   const modal = screen.getByRole('dialog')
-  expect(modal).toHaveAttribute('aria-label', 'Login form')
+  expect(modal).toHaveAttribute('aria-label', label)
   const inModal = within(modal)
-  expect(inModal.getByRole('heading', {name: 'Login'})).toBeInTheDocument()
-  expect(inModal.getByText('Content')).toBeInTheDocument()
+  expect(inModal.getByRole('heading', {name: title})).toBeInTheDocument()
+  expect(inModal.getByText(content)).toBeInTheDocument()
 
-  // 🐨 click the close button
-  await userEvent.click(screen.getByRole('button', {name: /close/i}))
+  await userEvent.click(inModal.getByRole('button', {name: /close/i}))
 
-  // 🐨 verify the modal is no longer rendered
-  // 💰 (use `query*` rather than `get*` or `find*` queries to verify it is not rendered)
-  // 💰 Remember all userEvent utils are async, so you need to await them.
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 })
