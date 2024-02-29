@@ -3,24 +3,11 @@ import {
   screen,
   waitForElementToBeRemoved,
 } from '@testing-library/react'
-import {AppProviders} from '../context'
+import userEvent from '@testing-library/user-event'
+import {AppProviders} from 'context'
+import * as auth from 'auth-provider'
 import {buildUser} from './generate'
 import * as usersDB from './data/users'
-import * as auth from '../auth-provider'
-
-const waitForLoadingToFinish = () =>
-  waitForElementToBeRemoved(() => [
-    ...screen.queryAllByLabelText(/loading/i),
-    ...screen.queryAllByText(/loading/i),
-  ])
-
-async function loginAsUser(userProperties) {
-  const user = buildUser(userProperties)
-  await usersDB.create(user)
-  const authUser = await usersDB.authenticate(user)
-  window.localStorage.setItem(auth.localStorageKey, authUser.token)
-  return authUser
-}
 
 async function render(ui, {route = '/list', user, ...renderOptions} = {}) {
   // if you want to render the app unauthenticated then pass "null" as the user
@@ -37,5 +24,19 @@ async function render(ui, {route = '/list', user, ...renderOptions} = {}) {
   return returnValue
 }
 
+async function loginAsUser(userProperties) {
+  const user = buildUser(userProperties)
+  await usersDB.create(user)
+  const authUser = await usersDB.authenticate(user)
+  window.localStorage.setItem(auth.localStorageKey, authUser.token)
+  return authUser
+}
+
+const waitForLoadingToFinish = () =>
+  waitForElementToBeRemoved(() => [
+    ...screen.queryAllByLabelText(/loading/i),
+    ...screen.queryAllByText(/loading/i),
+  ])
+
 export * from '@testing-library/react'
-export {render, waitForLoadingToFinish, loginAsUser}
+export {render, userEvent, loginAsUser, waitForLoadingToFinish}
