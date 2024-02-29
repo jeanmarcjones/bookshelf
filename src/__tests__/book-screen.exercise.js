@@ -12,28 +12,34 @@ import * as booksDB from 'test/data/books'
 import * as listItemsDB from 'test/data/list-items'
 import {formatDate} from 'utils/misc'
 import {App} from 'app'
+import {server, rest} from '../test/server'
+
+const apiURL = process.env.REACT_APP_API_URL
 
 const fakeTimerUserEvent = userEvent.setup({
   advanceTimers: () => jest.runOnlyPendingTimers(),
 })
 
 async function renderBookScreen({user, book, listItem} = {}) {
-  if (user === undefined || Boolean(listItem)) {
+  if (user === undefined) {
     user = await loginAsUser()
   }
-  if (book === undefined || Boolean(listItem)) {
+  if (book === undefined) {
     book = await booksDB.create(buildBook())
   }
-  if (listItem === undefined || Boolean(listItem)) {
-    listItem = await listItemsDB.create(
-      buildListItem({...listItem, owner: user, book}),
-    )
+  if (listItem === undefined) {
+    listItem = await listItemsDB.create(buildListItem({owner: user, book}))
   }
   const route = `/book/${book.id}`
 
-  await render(<App />, {route, user})
+  const utils = await render(<App />, {user, route})
 
-  return {user, book, listItem}
+  return {
+    ...utils,
+    book,
+    user,
+    listItem,
+  }
 }
 
 test('renders all the book information', async () => {
@@ -113,9 +119,12 @@ test('can remove a list item for the book', async () => {
 })
 
 test('can mark a list item as read', async () => {
-  const {listItem} = await renderBookScreen({
-    listItem: {finishDate: null},
-  })
+  const user = await loginAsUser()
+  const book = await booksDB.create(buildBook())
+  const listItemDB = await listItemsDB.create(
+    buildListItem({owner: user, book, finishDate: null}),
+  )
+  const {listItem} = await renderBookScreen({user, book, listItem: listItemDB})
 
   const markAsReadButton = screen.getByRole('button', {name: /mark as read/i})
   await userEvent.click(markAsReadButton)
@@ -158,5 +167,56 @@ test('can edit a note', async () => {
 
   expect(await listItemsDB.read(listItem.id)).toMatchObject({
     notes: newNotes,
+  })
+})
+
+describe('console errors', () => {
+  beforeAll(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterAll(() => {
+    console.error.mockRestore()
+  })
+
+  test('shows an error message when the book fails to load', async () => {
+    const book = {id: 'invalid-id'}
+    await renderBookScreen({book, listItem: null})
+
+    expect(await screen.getByRole('alert').textContent).toMatchInlineSnapshot(
+      `"There was an error: Book not found"`,
+    )
+  })
+
+  test('note update failures are displayed', async () => {
+    jest.useFakeTimers()
+    const {listItem} = await renderBookScreen()
+
+    const testErrorMessage = '__test_error_message__'
+    server.use(
+      rest.put(`${apiURL}/list-items/:listItemId`, async (req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({status: 400, message: testErrorMessage}),
+        )
+      }),
+    )
+
+    const newNotes = faker.lorem.words()
+    const notesTextarea = screen.getByRole('textbox', {name: /notes/i})
+
+    await fakeTimerUserEvent.clear(notesTextarea)
+    await fakeTimerUserEvent.type(notesTextarea, newNotes)
+
+    await screen.findByLabelText(/loading/i)
+    await waitForLoadingToFinish()
+
+    expect(await screen.getByRole('alert').textContent).toMatchInlineSnapshot(
+      `"There was an error: __test_error_message__"`,
+    )
+
+    expect(await listItemsDB.read(listItem.id)).not.toMatchObject({
+      notes: newNotes,
+    })
   })
 })
